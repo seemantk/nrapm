@@ -2,7 +2,10 @@ extern crate log;
 extern crate hostname;
 use clap::{Args, Parser, Subcommand};
 use std::env;
-mod evt;
+mod nrevt;
+mod nrlog;
+mod nrmetric;
+mod nrtrace;
 
 #[derive(Parser)]
 #[clap(name = "nrcli")]
@@ -41,9 +44,13 @@ pub struct Cli {
 #[derive(Subcommand)]
 enum Commands {
     Event(Event),
+    Log(Log),
+    Metric(Metric),
+    Trace(Trace),
 }
 
 #[derive(Args)]
+#[clap(about="Send Event to a New Relic")]
 struct Event {
     #[clap(short, long, default_value_t = String::from("ShellEvent"))]
     evt_type: String,
@@ -52,13 +59,42 @@ struct Event {
     args: Vec<String>,
 }
 
+#[derive(Args)]
+#[clap(about="Send Logs to a New Relic")]
+struct Log {
+    #[clap(last = true)]
+    args: Vec<String>,
+}
+
+#[derive(Args)]
+#[clap(about="Send Metric to a New Relic")]
+struct Metric {
+    #[clap(last = true)]
+    args: Vec<String>,
+}
+
+#[derive(Args)]
+#[clap(about="Send Trace data to a New Relic")]
+struct Trace {
+    #[clap(last = true)]
+    args: Vec<String>,
+}
 
 pub fn init() {
     let cli = Cli::parse();
     log::debug!("NR accunt: {}", cli.nr_account);
     match &cli.command {
         Commands::Event(_) => {
-            evt::process_event(cli);
+            nrevt::process_event(cli);
+        }
+        Commands::Log(_) => {
+            nrlog::process_log(cli);
+        }
+        Commands::Metric(_) => {
+            nrmetric::process_metric(cli);
+        }
+        Commands::Trace(_) => {
+            nrtrace::process_trace(cli);
         }
     }
 }
