@@ -1,13 +1,15 @@
 extern crate log;
+extern crate hostname;
 use clap::{Args, Parser, Subcommand};
 use std::env;
+mod evt;
 
 #[derive(Parser)]
 #[clap(name = "nrcli")]
 #[clap(author = "Vladimir Ulogov <vulogov@newrelic.com>")]
 #[clap(version = "1.0")]
 #[clap(about = "CLI interface to a New Relic", long_about = None)]
-struct Cli {
+pub struct Cli {
     #[clap(long, default_value_t = String::from("insights-collector.newrelic.com"))]
     nr_event: String,
 
@@ -29,19 +31,25 @@ struct Cli {
     #[clap(long, default_value_t = String::from(env::var("NEWRELIC_INSERTKEY").unwrap_or("".to_string())))]
     nr_insert: String,
 
+    #[clap(long, default_value_t = String::from(hostname::get().unwrap().into_string().unwrap()))]
+    hostname: String,
+
     #[clap(subcommand)]
     command: Commands,
 }
 
 #[derive(Subcommand)]
 enum Commands {
-    Send(Send),
+    Event(Event),
 }
 
 #[derive(Args)]
-struct Send {
-    #[clap(value_parser, forbid_empty_values = true)]
-    fname: Option<String>,
+struct Event {
+    #[clap(short, long, default_value_t = String::from("ShellEvent"))]
+    evt_type: String,
+
+    #[clap(last = true)]
+    args: Vec<String>,
 }
 
 
@@ -49,8 +57,8 @@ pub fn init() {
     let cli = Cli::parse();
     log::debug!("NR accunt: {}", cli.nr_account);
     match &cli.command {
-        Commands::Send(fname) => {
-            log::debug!("'nrcli add' was used, name is: {:?}", fname.fname)
+        Commands::Event(_) => {
+            evt::process_event(cli);
         }
     }
 }
