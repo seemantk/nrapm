@@ -6,8 +6,9 @@ mod nrevt;
 mod nrlog;
 mod nrmetric;
 mod nrtrace;
+mod sanity;
 
-#[derive(Parser)]
+#[derive(Parser, Clone)]
 #[clap(name = "nrcli")]
 #[clap(author = "Vladimir Ulogov <vulogov@newrelic.com>")]
 #[clap(version = "1.0")]
@@ -41,7 +42,7 @@ pub struct Cli {
     command: Commands,
 }
 
-#[derive(Subcommand)]
+#[derive(Subcommand, Clone)]
 enum Commands {
     Event(Event),
     Log(Log),
@@ -49,7 +50,7 @@ enum Commands {
     Trace(Trace),
 }
 
-#[derive(Args)]
+#[derive(Args, Clone)]
 #[clap(about="Send Event to a New Relic")]
 struct Event {
     #[clap(short, long, default_value_t = String::from("ShellEvent"))]
@@ -59,21 +60,21 @@ struct Event {
     args: Vec<String>,
 }
 
-#[derive(Args)]
+#[derive(Args, Clone)]
 #[clap(about="Send Logs to a New Relic")]
 struct Log {
     #[clap(last = true)]
     args: Vec<String>,
 }
 
-#[derive(Args)]
+#[derive(Args, Clone)]
 #[clap(about="Send Metric to a New Relic")]
 struct Metric {
     #[clap(last = true)]
     args: Vec<String>,
 }
 
-#[derive(Args)]
+#[derive(Args, Clone)]
 #[clap(about="Send Trace data to a New Relic")]
 struct Trace {
     #[clap(last = true)]
@@ -82,7 +83,7 @@ struct Trace {
 
 pub fn init() {
     let cli = Cli::parse();
-    log::debug!("NR accunt: {}", cli.nr_account);
+    sanity::check_sanity(cli.clone());
     match &cli.command {
         Commands::Event(_) => {
             nrevt::process_event(cli);
