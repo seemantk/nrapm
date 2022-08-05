@@ -101,6 +101,26 @@ struct Metric {
 struct Trace {
     #[clap(last = true)]
     args: Vec<String>,
+
+    #[clap(short, long, default_value_t = String::from("shell"))]
+    service: String,
+
+    #[clap(short, long, required=true)]
+    trace_id: String,
+
+    #[clap(short, long, required=true)]
+    id: String,
+
+    #[clap(short, long, default_value_t = String::from(""))]
+    parent_id: String,
+
+    #[clap(short, long, required=true)]
+    name: String,
+
+    #[clap(short, long, required=true)]
+    duration: u64,
+
+
 }
 
 pub fn init() {
@@ -116,8 +136,8 @@ pub fn init() {
         Commands::Metric(met) => {
             nrmetric::process_metric(&cli, &met.name, &met.metric_type, &met.value, &met.args);
         }
-        Commands::Trace(_) => {
-            nrtrace::process_trace(cli);
+        Commands::Trace(trace) => {
+            nrtrace::process_trace(&cli, &trace.service, &trace.trace_id, &trace.id, &trace.parent_id, &trace.name, &trace.duration, &trace.args);
         }
     }
 }
