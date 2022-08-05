@@ -200,18 +200,25 @@ pub fn parse_args(d: bool, e: &u8, h: &String, t: &u64, args: Vec<String>) -> Ma
 
 pub fn string_to_value(e: &u8, v: &str) -> Value {
     if *e > 0 {
-        let res = eval(v).unwrap();
-        if res.is_string() {
-            return Value::from(res.as_string().unwrap());
-        } else if res.is_int() {
-            return Value::from(res.as_int().unwrap());
-        } else if res.is_float() {
-            return Value::from(res.as_float().unwrap());
-        } else if res.is_boolean() {
-            return Value::from(res.as_boolean().unwrap());
-        } else {
-            log::trace!("{:?}", res);
-            return json!(null);
+        let r = eval(v);
+        match r {
+            Ok(res) => {
+                if res.is_string() {
+                    return Value::from(res.as_string().unwrap());
+                } else if res.is_int() {
+                    return Value::from(res.as_int().unwrap());
+                } else if res.is_float() {
+                    return Value::from(res.as_float().unwrap());
+                } else if res.is_boolean() {
+                    return Value::from(res.as_boolean().unwrap());
+                } else {
+                    log::trace!("{:?}", res);
+                    return json!(null);
+                }
+            }
+            Err(_) => {
+                return Value::from(v);
+            }
         }
     }
     match v {
