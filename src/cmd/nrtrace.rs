@@ -23,7 +23,7 @@ pub fn process_trace(c: &cmd::Cli, s: &String, t: &String, i: &String, p: &Strin
         }
         let key = pair[0];
         let value = pair[1];
-        attr.insert(key.to_string(), cmd::string_to_value(value));
+        attr.insert(key.to_string(), cmd::string_to_value(&c.eval, value));
     }
     res.insert("attributes".to_string(), json!(&attr));
     let out = json!([{

@@ -11,10 +11,12 @@ use flate2::read::GzEncoder;
 use flate2::Compression;
 use std::io;
 use std::io::prelude::*;
+use evalexpr::eval;
 mod nrevt;
 mod nrlog;
 mod nrmetric;
 mod nrtrace;
+mod nreval;
 mod sanity;
 
 #[derive(Parser, Clone)]
@@ -23,6 +25,9 @@ mod sanity;
 #[clap(version = "1.0")]
 #[clap(about = "CLI interface to a New Relic", long_about = None)]
 pub struct Cli {
+    #[clap(short, action = clap::ArgAction::Count)]
+    eval: u8,
+
     #[clap(long, default_value_t = String::from("insights-collector.newrelic.com"))]
     nr_event: String,
 
@@ -56,10 +61,18 @@ pub struct Cli {
 
 #[derive(Subcommand, Clone, Debug)]
 enum Commands {
+    Eval(Eval),
     Event(Event),
     Log(Log),
     Metric(Metric),
     Trace(Trace),
+}
+
+#[derive(Args, Clone, Debug)]
+#[clap(about="Evaluate expressions")]
+struct Eval {
+    #[clap(last = true)]
+    args: Vec<String>,
 }
 
 #[derive(Args, Clone, Debug)]
@@ -132,6 +145,14 @@ pub fn init() {
     let cli = Cli::parse();
     sanity::check_sanity(cli.clone());
     match &cli.command {
+        Commands::Eval(eval) => {
+            log::debug!("Evaluation mode is {}", cli.eval);
+            if cli.eval > 0 {
+                nreval::eval_expression(&cli, &eval.args);
+            } else {
+                log::error!("Evaluation mode is off");
+            }
+        }
         Commands::Event(event) => {
             nrevt::process_event(&cli, &event.args);
         }
@@ -149,8 +170,8 @@ pub fn init() {
 
 
 
-pub fn parse_args(d: bool, h: &String, t: &u64, args: Vec<String>) -> Map<String, Value> {
-    log::trace!("Converting arguments to a JSON value");
+pub fn parse_args(d: bool, e: &u8, h: &String, t: &u64, args: Vec<String>) -> Map<String, Value> {
+    log::trace!("Converting arguments to a JSON value. Eval mode is {}", e);
     let mut res = Map::new();
     let mut attr = Map::new();
     attr.insert("host.name".to_string(), Value::from(h.as_str()));
@@ -163,9 +184,9 @@ pub fn parse_args(d: bool, h: &String, t: &u64, args: Vec<String>) -> Map<String
         let key = pair[0];
         let value = pair[1];
         if d {
-            res.insert(key.to_string(), string_to_value(value));
+            res.insert(key.to_string(), string_to_value(e, value));
         } else {
-            attr.insert(key.to_string(), string_to_value(value));
+            attr.insert(key.to_string(), string_to_value(e, value));
         }
         if d {
             log::trace!("Setting values {} {}", key, value);
@@ -177,7 +198,22 @@ pub fn parse_args(d: bool, h: &String, t: &u64, args: Vec<String>) -> Map<String
     res
 }
 
-pub fn string_to_value(v: &str) -> Value {
+pub fn string_to_value(e: &u8, v: &str) -> Value {
+    if *e > 0 {
+        let res = eval(v).unwrap();
+        if res.is_string() {
+            return Value::from(res.as_string().unwrap());
+        } else if res.is_int() {
+            return Value::from(res.as_int().unwrap());
+        } else if res.is_float() {
+            return Value::from(res.as_float().unwrap());
+        } else if res.is_boolean() {
+            return Value::from(res.as_boolean().unwrap());
+        } else {
+            log::trace!("{:?}", res);
+            return json!(null);
+        }
+    }
     match v {
         "true" => { return json!(true); }
         "false" => { return json!(false); }
