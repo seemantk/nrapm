@@ -1,6 +1,13 @@
 extern crate log;
+use serde_json::{to_string, Value};
 use crate::cmd;
 
-pub fn process_metric(c: cmd::Cli) {
-    log::trace!("NRCLI Metric() reached {}", c.hostname)
+pub fn process_metric(c: &cmd::Cli, n: &String, t: &String, v: &String, a: &Vec<String>) {
+    log::trace!("NRCLI Metric() reached");
+    let mut j = cmd::parse_args(false, &c.hostname, &c.timestamp, a.to_vec());
+    j.insert("name".to_string(), Value::from(n.as_str()));
+    j.insert("type".to_string(), Value::from(t.as_str()));
+    j.insert("value".to_string(), cmd::string_to_value(v.as_str()));
+    let payload = to_string(&j).unwrap();
+    log::debug!("{}", payload)
 }
