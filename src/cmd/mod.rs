@@ -110,8 +110,8 @@ pub fn init() {
         Commands::Event(event) => {
             nrevt::process_event(&cli, &event.args);
         }
-        Commands::Log(_) => {
-            nrlog::process_log(cli);
+        Commands::Log(nrlog) => {
+            nrlog::process_log(&cli, &nrlog.log_type, &nrlog.service, &nrlog.args);
         }
         Commands::Metric(met) => {
             nrmetric::process_metric(&cli, &met.name, &met.metric_type, &met.value, &met.args);
