@@ -1,11 +1,16 @@
 extern crate log;
 extern crate hostname;
+extern crate flate2;
 use clap::{Args, Parser, Subcommand};
 use std::env;
 use std::fmt::Debug;
 use std::time::{SystemTime, UNIX_EPOCH};
 use serde_json::{json, Map, Value};
 use lexical_core;
+use flate2::read::GzEncoder;
+use flate2::Compression;
+use std::io;
+use std::io::prelude::*;
 mod nrevt;
 mod nrlog;
 mod nrmetric;
@@ -193,4 +198,11 @@ pub fn string_to_value(v: &str) -> Value {
             }
         }
     }
+}
+
+pub fn compress_payload(payload: &String) -> io::Result<Vec<u8>> {
+    let mut result = Vec::new();
+    let mut z = GzEncoder::new(&payload.as_bytes()[..], Compression::fast());
+    z.read_to_end(&mut result)?;
+    Ok(result)
 }
