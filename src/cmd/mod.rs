@@ -154,7 +154,7 @@ pub fn init() {
             }
         }
         Commands::Event(event) => {
-            nrevt::process_event(&cli, &event.args);
+            nrevt::process_event(&cli, &event.evt_type, &event.args);
         }
         Commands::Log(nrlog) => {
             nrlog::process_log(&cli, &nrlog.log_type, &nrlog.service, &nrlog.args);
