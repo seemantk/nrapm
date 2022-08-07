@@ -1,6 +1,7 @@
 extern crate log;
 use std::vec::Vec;
 use serde_json::{to_string,json, Map, Value};
+use ureq::post;
 use crate::cmd;
 
 pub fn process_log(c: &cmd::Cli, t: &String, s: &String, a: &Vec<String>) {
@@ -23,5 +24,22 @@ pub fn process_log(c: &cmd::Cli, t: &String, s: &String, a: &Vec<String>) {
         }]
     );
     let payload = to_string(&out).unwrap();
-    log::debug!("{}", &payload)
+    log::debug!("{}", &payload);
+    send_log(c, &payload);
+}
+
+fn send_log(c: &cmd::Cli, payload: &String) {
+    let url = format!("https://{}/log/v1", c.nr_log);
+    log::trace!("Endpoint URL: {}", url);
+    let resp = post(&url)
+        .set("Api-Key", &c.nr_insert)
+        .set("Content-Type", "application/json")
+        .send_bytes(payload.as_bytes()).unwrap();
+    if resp.status() == 202 {
+        log::debug!("Request was succesful");
+        std::process::exit(0);
+    } else {
+        log::error!("Request failed");
+        std::process::exit(1);
+    }
 }
