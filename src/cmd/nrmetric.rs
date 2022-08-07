@@ -1,5 +1,6 @@
 extern crate log;
 use serde_json::{json,to_string, Value};
+use ureq::post;
 use crate::cmd;
 
 pub fn process_metric(c: &cmd::Cli, n: &String, t: &String, v: &String, a: &Vec<String>) {
@@ -16,5 +17,22 @@ pub fn process_metric(c: &cmd::Cli, n: &String, t: &String, v: &String, a: &Vec<
         }]
     );
     let payload = to_string(&out).unwrap();
-    log::debug!("{}", &payload)
+    log::debug!("{}", &payload);
+    send_metric(c, &payload)
+}
+
+fn send_metric(c: &cmd::Cli, payload: &String) {
+    let url = format!("https://{}/metric/v1", c.nr_metric);
+    log::trace!("Endpoint URL: {}", url);
+    let resp = post(&url)
+        .set("Api-Key", &c.nr_insert)
+        .set("Content-Type", "application/json")
+        .send_bytes(payload.as_bytes()).unwrap();
+    if resp.status() == 202 {
+        log::debug!("Request was succesful");
+        std::process::exit(0);
+    } else {
+        log::error!("Request failed");
+        std::process::exit(1);
+    }
 }
