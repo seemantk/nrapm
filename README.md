@@ -2,7 +2,7 @@
 
 nrcli is a shell command, that sends metric events and logs to a [New Relic monitoring and observability platform](https://www.newrelic.com). In fact, this tool is your [APM instrument](https://newrelic.com/platform/application-monitoring) for a shell scripts. nrcli is very efficient and lean application, for most platform, nrcli binary do have a size only about 4Mb, which make it suitable for use in most embedded applications as well.
 
-##Compilation and Installation
+## Compilation and Installation
 
 nrcli is written in [Rust language](https://www.rust-lang.org/) and in order to be compiled from the source, requires Rust version at least 1.62 that have to be [installed](https://www.rust-lang.org/tools/install) on your build server. Before continue, check that you have you build environment ready
 
@@ -29,7 +29,7 @@ $ cargo rustc --release -- -C target-cpu=native
 
 after that, you can install nrcli tool to your desired location. There is no any other dependencies.
 
-##Running nrcli
+## Running nrcli
 
 nrcli is a shell application and provides some relevant help messages.
 
@@ -74,7 +74,7 @@ In general, nrcli is called with relevant subcommand:
 
 Each of those commands do have an individual set of keys and we will review them later on. But before that, let's set up a New Relic environment.
 
-###Setting up New Relic environment
+### Setting up New Relic environment
 
 To successfully run nrcli, you will need three artifacts from New Relic
 
@@ -84,7 +84,7 @@ To successfully run nrcli, you will need three artifacts from New Relic
 
 There are two ways to pass this info to nrcli.
 
-####Through environment.
+#### Through environment.
 
 This is recommended method. You shall set three environment variables:
 
@@ -92,7 +92,7 @@ This is recommended method. You shall set three environment variables:
 - NEWRELIC_API - with value as of New Relic API key
 - NEWRELIC_INSERTKEY - with value as of New Relic INGEST key.
 
-####Through command line parameters of nrcli
+#### Through command line parameters of nrcli
 
 - --nr-account - with value as of Account number
 - --nr-api - with value as of New Relic API key
@@ -100,7 +100,7 @@ This is recommended method. You shall set three environment variables:
 
 I am not recommending to use command line parameters to pass that critical information to nrcli, as this information will be available to everyone who can run ps command.
 
-###Curb the debug output
+### Curb the debug output
 
 By default, nrcli outputs with debuglevel "TRACE" which makes it to be a lot of output. You can set environment variable NRCLI_LOG_LEVEL to set desired lovel of output from nrcli. Available options are:
 
@@ -109,7 +109,7 @@ By default, nrcli outputs with debuglevel "TRACE" which makes it to be a lot of 
 - warning - very few messages
 - error - report only errors. Set this for production.
 
-###Passing positional parameters to nrcli
+### Passing positional parameters to nrcli
 
 A lot of information that have to be a part of the event/metric/log is passed as positional parameters, that separated from regular parameters of the command by double-dash. For events and metrics, positional parameters are in key-value form, where key separated from value with "equal" sign. Example:
 
@@ -123,7 +123,7 @@ For New Relic log tool, each positional parameter is a string, and each string i
 -- "First log message" "Second log message"
 ```
 
-###Sending event
+### Sending event
 
 Sub-Command "event" for sending event have a format:
 
@@ -151,7 +151,7 @@ nrcli metric --name "my.application.metric" --value 42 -- pi=3.14 greetings="Hel
 ```
 ![sent metric](documentation/metric.png)
 
-###Sending logs
+### Sending logs
 
 Sub-command "log" can be used for sending log messages to a New Relic observability platform. Following parameters could be used with this sub-command
 
@@ -165,6 +165,6 @@ nrcli log  -- "Log line 1" "Log line 2"
 ```
 ![sent log](documentation/log.png)
 
-##Conclusion
+## Conclusion
 
 nrcli is a simple tool, that allows you to instrument your shell scripts without using any complicated APM tool and go into  an excessing development. Author will appreciate a feedback, critique and [bug reports](https://github.com/vulogov/nrcli/issues). Also, feel free to [contribute](https://github.com/vulogov/nrcli/pulls), this is always appreciated as well.
