@@ -8,7 +8,7 @@ pub fn process_trace(c: &cmd::Cli, s: &String, t: &String, i: &String, p: &Strin
     let mut res = Map::new();
     let mut attr = Map::new();
     attr.insert("host".to_string(), Value::from(c.hostname.as_str()));
-    res.insert("timestamp".to_string(), json!(c.timestamp*1000));
+    res.insert("timestamp".to_string(), json!(c.timestamp));
     res.insert("service".to_string(), Value::from(s.as_str()));
     res.insert("trace.id".to_string(), Value::from(t.as_str()));
     res.insert("id".to_string(), Value::from(i.as_str()));
