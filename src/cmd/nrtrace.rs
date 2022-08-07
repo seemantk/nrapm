@@ -1,5 +1,6 @@
 extern crate log;
 use serde_json::{json, to_string, Map, Value};
+use ureq::post;
 use crate::cmd;
 
 pub fn process_trace(c: &cmd::Cli, s: &String, t: &String, i: &String, p: &String, n: &String, d: &u64, a: &Vec<String>) {
@@ -7,7 +8,7 @@ pub fn process_trace(c: &cmd::Cli, s: &String, t: &String, i: &String, p: &Strin
     let mut res = Map::new();
     let mut attr = Map::new();
     attr.insert("host".to_string(), Value::from(c.hostname.as_str()));
-    res.insert("timestamp".to_string(), json!(c.timestamp));
+    res.insert("timestamp".to_string(), json!(c.timestamp*1000));
     res.insert("service".to_string(), Value::from(s.as_str()));
     res.insert("trace.id".to_string(), Value::from(t.as_str()));
     res.insert("id".to_string(), Value::from(i.as_str()));
@@ -33,4 +34,23 @@ pub fn process_trace(c: &cmd::Cli, s: &String, t: &String, i: &String, p: &Strin
     }]);
     let payload = to_string(&out).unwrap();
     log::debug!("{}", &payload);
+    send_trace(c, &payload);
+}
+
+fn send_trace(c: &cmd::Cli, payload: &String) {
+    let url = format!("https://{}/trace/v1", c.nr_trace);
+    log::trace!("Endpoint URL: {}", url);
+    let resp = post(&url)
+        .set("Api-Key", &c.nr_insert)
+        .set("Content-Type", "application/json")
+        .set("Data-Format", "newrelic")
+        .set("Data-Format-Version", "1")
+        .send_bytes(payload.as_bytes()).unwrap();
+    if resp.status() == 202 {
+        log::debug!("Request was succesful");
+        std::process::exit(0);
+    } else {
+        log::error!("Request failed");
+        std::process::exit(1);
+    }
 }
