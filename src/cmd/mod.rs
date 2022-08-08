@@ -11,13 +11,13 @@ use flate2::read::GzEncoder;
 use flate2::Compression;
 use std::io;
 use std::io::prelude::*;
-use evalexpr::eval;
 mod nrevt;
 mod nrlog;
 mod nrmetric;
 mod nrtrace;
 mod nreval;
 mod sanity;
+mod eval;
 
 #[derive(Parser, Clone)]
 #[clap(name = "nrcli")]
@@ -200,7 +200,7 @@ pub fn parse_args(d: bool, e: &u8, h: &String, t: &u64, args: Vec<String>) -> Ma
 
 pub fn string_to_value(e: &u8, v: &str) -> Value {
     if *e > 0 {
-        let r = eval(v);
+        let r = eval::eval_expression(v);
         match r {
             Ok(res) => {
                 if res.is_string() {
