@@ -11,6 +11,7 @@ use flate2::read::GzEncoder;
 use flate2::Compression;
 use std::io;
 use std::io::prelude::*;
+use std::os::unix::process::parent_id;
 mod nrevt;
 mod nrlog;
 mod nrmetric;
@@ -66,6 +67,7 @@ enum Commands {
     Log(Log),
     Metric(Metric),
     Trace(Trace),
+    Process(Process),
 }
 
 #[derive(Args, Clone, Debug)]
@@ -80,6 +82,19 @@ struct Eval {
 struct Event {
     #[clap(short, long, default_value_t = String::from("ShellEvent"))]
     evt_type: String,
+
+    #[clap(last = true)]
+    args: Vec<String>,
+}
+
+#[derive(Args, Clone, Debug)]
+#[clap(about="Send information about process to a New Relic")]
+struct Process {
+    #[clap(short, long, default_value_t = String::from("ShellEvent"))]
+    evt_type: String,
+
+    #[clap(short, long, default_value_t = parent_id().try_into().unwrap())]
+    pid: i32,
 
     #[clap(last = true)]
     args: Vec<String>,
@@ -164,6 +179,9 @@ pub fn init() {
         }
         Commands::Trace(trace) => {
             nrtrace::process_trace(&cli, &trace.service, &trace.trace_id, &trace.id, &trace.parent_id, &trace.name, &trace.duration, &trace.args);
+        }
+        Commands::Process(proc) => {
+            nrevt::process_process_event(&cli, &proc.evt_type, &proc.pid, &proc.args);
         }
     }
 }
