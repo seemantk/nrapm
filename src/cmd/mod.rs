@@ -19,6 +19,7 @@ mod nrtrace;
 mod nreval;
 mod sanity;
 mod eval;
+mod nrscript;
 
 #[derive(Parser, Clone)]
 #[clap(name = "nrcli")]
@@ -63,6 +64,7 @@ pub struct Cli {
 #[derive(Subcommand, Clone, Debug)]
 enum Commands {
     Eval(Eval),
+    Script(Script),
     Event(Event),
     Log(Log),
     Metric(Metric),
@@ -73,6 +75,13 @@ enum Commands {
 #[derive(Args, Clone, Debug)]
 #[clap(about="Evaluate expressions")]
 struct Eval {
+    #[clap(last = true)]
+    args: Vec<String>,
+}
+
+#[derive(Args, Clone, Debug)]
+#[clap(about="Run scripts")]
+struct Script {
     #[clap(last = true)]
     args: Vec<String>,
 }
@@ -168,6 +177,14 @@ pub fn init() {
                 log::error!("Evaluation mode is off");
             }
         }
+        Commands::Script(scr) => {
+            log::debug!("Evaluation mode is {}", cli.eval);
+            if cli.eval > 0 {
+                nrscript::eval_expression(&cli, &scr.args);
+            } else {
+                log::error!("Evaluation mode is off");
+            }
+        }
         Commands::Event(event) => {
             nrevt::process_event(&cli, &event.evt_type, &event.args);
         }
@@ -218,26 +235,7 @@ pub fn parse_args(d: bool, e: &u8, h: &String, t: &u64, args: Vec<String>) -> Ma
 
 pub fn string_to_value(e: &u8, v: &str) -> Value {
     if *e > 0 {
-        let r = eval::eval_expression(v);
-        match r {
-            Ok(res) => {
-                if res.is_string() {
-                    return Value::from(res.as_string().unwrap());
-                } else if res.is_int() {
-                    return Value::from(res.as_int().unwrap());
-                } else if res.is_float() {
-                    return Value::from(res.as_float().unwrap());
-                } else if res.is_boolean() {
-                    return Value::from(res.as_boolean().unwrap());
-                } else {
-                    log::trace!("{:?}", res);
-                    return json!(null);
-                }
-            }
-            Err(_) => {
-                return Value::from(v);
-            }
-        }
+        return eval::eval_expression(v);
     }
     match v {
         "true" => { return json!(true); }

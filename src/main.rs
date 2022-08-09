@@ -2,6 +2,7 @@ extern crate log;
 use env_logger::Env;
 
 pub mod cmd;
+pub mod rscript;
 
 fn main() {
     let env = Env::default()
