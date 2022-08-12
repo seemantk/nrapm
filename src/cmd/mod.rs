@@ -20,6 +20,7 @@ mod nreval;
 mod sanity;
 mod eval;
 mod nrscript;
+mod nrrun;
 
 #[derive(Parser, Clone)]
 #[clap(name = "nrcli")]
@@ -70,6 +71,7 @@ enum Commands {
     Metric(Metric),
     Trace(Trace),
     Process(Process),
+    Run(Run),
 }
 
 #[derive(Args, Clone, Debug)]
@@ -161,8 +163,28 @@ struct Trace {
 
     #[clap(short, long, required=true)]
     duration: u64,
+}
 
+#[derive(Args, Clone, Debug)]
+#[clap(about="Run a command and measure it's performance")]
+struct Run {
+    #[clap(last = true)]
+    args: Vec<String>,
 
+    #[clap(short, long, default_value_t = String::from("ShellEvent"))]
+    evt_type: String,
+
+    #[clap(short, long, default_value_t = String::from("shell"))]
+    service: String,
+
+    #[clap(short, long, required=true)]
+    trace_id: String,
+
+    #[clap(short, long, required=true)]
+    id: String,
+
+    #[clap(short, long, default_value_t = String::from("nrapm"))]
+    parent_id: String,
 }
 
 pub fn init() {
@@ -199,6 +221,9 @@ pub fn init() {
         }
         Commands::Process(proc) => {
             nrevt::process_process_event(&cli, &proc.evt_type, &proc.pid, &proc.args);
+        }
+        Commands::Run(run) => {
+            nrrun::process_run(&cli, &run.service, &run.trace_id, &run.evt_type, &run.id, &run.parent_id, &run.args);
         }
     }
 }

@@ -55,7 +55,6 @@ fn send_event(c: &cmd::Cli, payload: &String) {
         .send_bytes(zp).unwrap();
     if resp.status() == 200 {
         log::debug!("Request was succesful");
-        std::process::exit(0);
     } else {
         log::error!("Request failed");
         std::process::exit(1);

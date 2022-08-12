@@ -1,6 +1,6 @@
 extern crate log;
 use env_logger::Env;
-
+use std;
 pub mod cmd;
 pub mod rscript;
 
@@ -11,5 +11,6 @@ fn main() {
 
     env_logger::init_from_env(env);
     log::trace!("NRCLI main() function is reached");
-    cmd::init()
+    cmd::init();
+    std::process::exit(0);
 }
