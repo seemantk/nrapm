@@ -262,6 +262,10 @@ pub fn string_to_value(e: &u8, v: &str) -> Value {
     if *e > 0 {
         return eval::eval_expression(v);
     }
+    raw_string_to_value(&v)
+}
+
+pub fn raw_string_to_value(v: &str) -> Value {
     match v {
         "true" => { return json!(true); }
         "false" => { return json!(false); }
