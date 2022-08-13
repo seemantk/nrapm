@@ -24,7 +24,7 @@ pub fn process_trace(c: &cmd::Cli, s: &String, t: &String, i: &String, p: &Strin
         }
         let key = pair[0];
         let value = pair[1];
-        attr.insert(key.to_string(), cmd::string_to_value(&c.eval, value));
+        attr.insert(key.to_string(), cmd::string_to_value(&c, &c.eval, value));
     }
     res.insert("attributes".to_string(), json!(&attr));
     let out = json!([{
@@ -57,7 +57,7 @@ pub fn process_trace_with_timestamp(c: &cmd::Cli, ts: &u64,  s: &String, t: &Str
         }
         let key = pair[0];
         let value = pair[1];
-        attr.insert(key.to_string(), cmd::string_to_value(&c.eval, value));
+        attr.insert(key.to_string(), cmd::string_to_value(&c, &c.eval, value));
     }
     res.insert("attributes".to_string(), json!(&attr));
     let out = json!([{

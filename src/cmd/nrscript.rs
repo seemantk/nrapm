@@ -27,14 +27,14 @@ fn read_from_stdin() -> io::Result<String> {
     Ok(user_input)
 }
 
-pub fn eval_expression(_c: &cmd::Cli, a: &Vec<String>)  {
+pub fn eval_expression(c: &cmd::Cli, a: &Vec<String>)  {
     let mut res: Value;
     for s in a {
         if s == "-" {
             let s = read_from_stdin().unwrap();
-            res = rscript::run_script(&s);
+            res = rscript::run_script(&c, &s);
         } else {
-            res = rscript::run_script(&s);
+            res = rscript::run_script(&c, &s);
         }
         println!("{}", res);
     }

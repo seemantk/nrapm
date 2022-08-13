@@ -21,6 +21,8 @@ mod sanity;
 mod eval;
 mod nrscript;
 mod nrrun;
+pub mod nrkv;
+mod nrset;
 
 #[derive(Parser, Clone)]
 #[clap(name = "nrcli")]
@@ -28,35 +30,38 @@ mod nrrun;
 #[clap(version = "1.0")]
 #[clap(about = "CLI interface to a New Relic", long_about = None)]
 pub struct Cli {
-    #[clap(short, action = clap::ArgAction::Count)]
+    #[clap(short, action = clap::ArgAction::Count, help="Enable evaluation mode")]
     eval: u8,
 
-    #[clap(long, default_value_t = String::from("insights-collector.newrelic.com"))]
+    #[clap(long, default_value_t = String::from("insights-collector.newrelic.com"), help="Hostname for Event API")]
     nr_event: String,
 
-    #[clap(long, default_value_t = String::from("metric-api.newrelic.com"))]
+    #[clap(long, default_value_t = String::from("metric-api.newrelic.com"), help="Hostname for Metric API")]
     nr_metric: String,
 
-    #[clap(long, default_value_t = String::from("log-api.newrelic.com"))]
+    #[clap(long, default_value_t = String::from("log-api.newrelic.com"), help="Hostname for Log API")]
     nr_log: String,
 
-    #[clap(long, default_value_t = String::from("trace-api.newrelic.com"))]
+    #[clap(long, default_value_t = String::from("trace-api.newrelic.com"), help="Hostname for Trace API")]
     nr_trace: String,
 
-    #[clap(long, default_value_t = String::from(env::var("NEWRELIC_ACCOUNT").unwrap_or("0".to_string())))]
+    #[clap(help="NR account", long, default_value_t = String::from(env::var("NEWRELIC_ACCOUNT").unwrap_or("0".to_string())))]
     nr_account: String,
 
-    #[clap(long, default_value_t = String::from(env::var("NEWRELIC_API").unwrap_or("".to_string())))]
+    #[clap(help="NR API key", long, default_value_t = String::from(env::var("NEWRELIC_API").unwrap_or("".to_string())))]
     nr_api: String,
 
-    #[clap(long, default_value_t = String::from(env::var("NEWRELIC_INSERTKEY").unwrap_or("".to_string())))]
+    #[clap(help="NR Ingestion key", long, default_value_t = String::from(env::var("NEWRELIC_INSERTKEY").unwrap_or("".to_string())))]
     nr_insert: String,
 
-    #[clap(long, default_value_t = String::from(hostname::get().unwrap().into_string().unwrap()))]
+    #[clap(help="Hostname for the script APM", long, default_value_t = String::from(hostname::get().unwrap().into_string().unwrap()))]
     hostname: String,
 
-    #[clap(long, default_value_t = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs())]
+    #[clap(help="Timestamp", long, default_value_t = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs())]
     timestamp: u64,
+
+    #[clap(short, long, required=true, help="Name of the key-value database for storing the state")]
+    state: String,
 
     #[clap(subcommand)]
     command: Commands,
@@ -71,6 +76,7 @@ enum Commands {
     Metric(Metric),
     Trace(Trace),
     Process(Process),
+    Set(Set),
     Run(Run),
 }
 
@@ -187,6 +193,14 @@ struct Run {
     parent_id: String,
 }
 
+#[derive(Args, Clone, Debug)]
+#[clap(about="Set variable into a permanent state")]
+struct Set {
+    #[clap(last = true)]
+    args: Vec<String>,
+
+}
+
 pub fn init() {
     let cli = Cli::parse();
     sanity::check_sanity(cli.clone());
@@ -225,12 +239,15 @@ pub fn init() {
         Commands::Run(run) => {
             nrrun::process_run(&cli, &run.service, &run.trace_id, &run.evt_type, &run.id, &run.parent_id, &run.args);
         }
+        Commands::Set(set) => {
+            nrset::process_set(&cli,  &set.args);
+        }
     }
 }
 
 
 
-pub fn parse_args(d: bool, e: &u8, h: &String, t: &u64, args: Vec<String>) -> Map<String, Value> {
+pub fn parse_args(c: &Cli, d: bool, e: &u8, h: &String, t: &u64, args: Vec<String>) -> Map<String, Value> {
     log::trace!("Converting arguments to a JSON value. Eval mode is {}", e);
     let mut res = Map::new();
     let mut attr = Map::new();
@@ -244,9 +261,9 @@ pub fn parse_args(d: bool, e: &u8, h: &String, t: &u64, args: Vec<String>) -> Ma
         let key = pair[0];
         let value = pair[1];
         if d {
-            res.insert(key.to_string(), string_to_value(e, value));
+            res.insert(key.to_string(), string_to_value(&c, e, value));
         } else {
-            attr.insert(key.to_string(), string_to_value(e, value));
+            attr.insert(key.to_string(), string_to_value(&c, e, value));
         }
         if d {
             log::trace!("Setting values {} {}", key, value);
@@ -258,14 +275,14 @@ pub fn parse_args(d: bool, e: &u8, h: &String, t: &u64, args: Vec<String>) -> Ma
     res
 }
 
-pub fn string_to_value(e: &u8, v: &str) -> Value {
+pub fn string_to_value(c: &Cli, e: &u8, v: &str) -> Value {
     if *e > 0 {
-        return eval::eval_expression(v);
+        return eval::eval_expression(&c, &v);
     }
-    raw_string_to_value(&v)
+    raw_string_to_value(&c, &v)
 }
 
-pub fn raw_string_to_value(v: &str) -> Value {
+pub fn raw_string_to_value(c: &Cli, v: &str) -> Value {
     match v {
         "true" => { return json!(true); }
         "false" => { return json!(false); }

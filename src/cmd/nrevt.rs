@@ -7,7 +7,7 @@ use std;
 
 pub fn process_event(c: &cmd::Cli, t: &String, a: &Vec<String>) {
     log::trace!("NRCLI Event() reached");
-    let mut j = cmd::parse_args(true, &c.eval, &c.hostname, &c.timestamp, a.to_vec());
+    let mut j = cmd::parse_args(&c, true, &c.eval, &c.hostname, &c.timestamp, a.to_vec());
     j.insert("eventType".to_string(), Value::from(t.as_str()));
     let out = json!(
         [j,]
@@ -21,7 +21,7 @@ pub fn process_process_event(c: &cmd::Cli, t: &String, p: &i32, a: &Vec<String>)
     log::trace!("NRCLI Event() reached");
     let mut sys = System::new();
     sys.refresh_all();
-    let mut j = cmd::parse_args(true, &c.eval, &c.hostname, &c.timestamp, a.to_vec());
+    let mut j = cmd::parse_args(&c, true, &c.eval, &c.hostname, &c.timestamp, a.to_vec());
     j.insert("eventType".to_string(), Value::from(t.as_str()));
     j.insert("sysname".to_string(), Value::from(sys.name()));
     j.insert("kernel".to_string(), Value::from(sys.kernel_version()));

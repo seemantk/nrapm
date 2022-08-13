@@ -1,9 +1,14 @@
 extern crate log;
 use std;
-use rhai::{Engine, Dynamic, EvalAltResult};
-use serde_json::{Value};
+use rhai::{Engine, Dynamic, EvalAltResult, Array, Map};
+use serde_json::{json, Value};
+use crate::cmd;
+use crate::cmd::nrkv;
 
-pub fn run_script(s: &String) -> Value {
+pub mod rjson;
+
+pub fn run_script(c: &cmd::Cli, s: &String) -> Value {
+    let vars = nrkv::values(&c);
     let engine = Engine::new();
     let res: Result<Dynamic, Box<EvalAltResult>> = engine.eval(s);
     match res {
@@ -25,6 +30,15 @@ pub fn run_script(s: &String) -> Value {
                 let v = value.cast::<bool>();
                 log::trace!("script returned <bool> = {}", &v);
                 return Value::from(v);
+            } else if value.is::<Array>() {
+                let v = value.cast::<Array>();
+                log::trace!("script returned <Array> = {:?}", &v);
+                let res: Vec<Value> = Vec::new();
+                return json!(res);
+            } else if value.is::<Map>() {
+                let v = value.cast::<Map>();
+                log::trace!("script returned <Map> = {:?}", &v);
+                return json!(null);
             } else {
                 log::error!("Script returned unexpected value: {:?}", value);
                 std::process::exit(11);

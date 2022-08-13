@@ -1,5 +1,6 @@
 extern crate log;
 use crate::cmd;
+use crate::cmd::nrkv;
 use std;
 
 pub fn check_sanity(c: cmd::Cli) {
@@ -19,5 +20,6 @@ pub fn check_sanity(c: cmd::Cli) {
         std::process::exit(10)
     }
     log::debug!("NR INSERT key is {}", c.nr_insert);
+    nrkv::open_kv(&c);
     log::trace!("NRCLI Sanity check is OK")
 }
