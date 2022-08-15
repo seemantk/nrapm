@@ -5,7 +5,7 @@ use ureq::post;
 use crate::cmd;
 
 pub fn process_log(c: &cmd::Cli, t: &String, s: &String, a: &Vec<String>) {
-    log::trace!("NRCLI Log() reached");
+    log::trace!("NRAPM Log() reached");
     let mut logs = Vec::new();
     for l in a {
         let mut res = Map::new();

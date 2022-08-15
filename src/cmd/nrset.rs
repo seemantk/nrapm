@@ -4,7 +4,7 @@ use crate::cmd::nrkv;
 use crate::cmd::eval;
 
 pub fn process_set(c: &cmd::Cli, a: &Vec<String>) {
-    log::trace!("NRCLI Set() reached");
+    log::trace!("NRAPM Set() reached");
     set_from_args(&c, &a)
 }
 

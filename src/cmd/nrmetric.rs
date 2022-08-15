@@ -4,7 +4,7 @@ use ureq::post;
 use crate::cmd;
 
 pub fn process_metric(c: &cmd::Cli, n: &String, t: &String, v: &String, a: &Vec<String>) {
-    log::trace!("NRCLI Metric() reached");
+    log::trace!("NRAPM Metric() reached");
     let mut j = cmd::parse_args(&c, false, &c.eval, &c.hostname, &c.timestamp, a.to_vec());
     j.insert("name".to_string(), Value::from(n.as_str()));
     j.insert("type".to_string(), Value::from(t.as_str()));

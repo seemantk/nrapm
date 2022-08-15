@@ -4,7 +4,7 @@ use ureq::post;
 use crate::cmd;
 
 pub fn process_trace(c: &cmd::Cli, s: &String, t: &String, i: &String, p: &String, n: &String, d: &u64, a: &Vec<String>) {
-    log::trace!("NRCLI Trace() reached");
+    log::trace!("NRAPM Trace() reached");
     let mut res = Map::new();
     let mut attr = Map::new();
     attr.insert("host".to_string(), Value::from(c.hostname.as_str()));

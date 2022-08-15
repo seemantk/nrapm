@@ -102,7 +102,7 @@ I am not recommending to use command line parameters to pass that critical infor
 
 ### Curb the debug output
 
-By default, nrapm outputs with debuglevel "TRACE" which makes it to be a lot of output. You can set environment variable nrapm_LOG_LEVEL to set desired lovel of output from nrapm. Available options are:
+By default, nrapm outputs with debuglevel "TRACE" which makes it to be a lot of output. You can set environment variable NRAPM_LOG_LEVEL to set desired lovel of output from nrapm. Available options are:
 
 - trace - lots of output and that is default.
 - debug - much more compact output
