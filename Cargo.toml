@@ -1,5 +1,5 @@
 [package]
-name = "nrcli"
+name = "nrapm"
 version = "1.0.0"
 edition = "2021"
 
