@@ -25,10 +25,10 @@ pub mod nrkv;
 mod nrset;
 
 #[derive(Parser, Clone)]
-#[clap(name = "nrcli")]
+#[clap(name = "nrapm")]
 #[clap(author = "Vladimir Ulogov <vulogov@newrelic.com>")]
 #[clap(version = "1.0")]
-#[clap(about = "CLI interface to a New Relic", long_about = None)]
+#[clap(about = "APM interface to a New Relic", long_about = None)]
 pub struct Cli {
     #[clap(short, action = clap::ArgAction::Count, help="Enable evaluation mode")]
     eval: u8,
@@ -97,7 +97,7 @@ struct Script {
 #[derive(Args, Clone, Debug)]
 #[clap(about="Send Event to a New Relic")]
 struct Event {
-    #[clap(short, long, default_value_t = String::from("ShellEvent"))]
+    #[clap(short, long, default_value_t = String::from("ShellEvent"), help="New Relic event type")]
     evt_type: String,
 
     #[clap(last = true)]
