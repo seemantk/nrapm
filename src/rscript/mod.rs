@@ -1,15 +1,19 @@
 extern crate log;
 use std;
-use rhai::{Engine, Dynamic, EvalAltResult, Array, Map};
+use std::collections::HashMap;
+use rhai::{Engine, Dynamic, EvalAltResult, Array, Map, Shared};
 use serde_json::{json, Value};
 use crate::cmd;
-use crate::cmd::nrkv;
 
 pub mod rjson;
+mod rstate;
 
 pub fn run_script(c: &cmd::Cli, s: &String) -> Value {
-    let vars = nrkv::values(&c);
-    let engine = Engine::new();
+    let mut engine = Engine::new();
+    let sm = rstate::load_state_to_module(&c);
+    let state_mod = Shared::as_ptr(&sm);
+    engine.register_global_module(sm);
+    rstate::save_state(&c, state_mod);
     let res: Result<Dynamic, Box<EvalAltResult>> = engine.eval(s);
     match res {
         Ok(_) => {
@@ -38,7 +42,8 @@ pub fn run_script(c: &cmd::Cli, s: &String) -> Value {
             } else if value.is::<Map>() {
                 let v = value.cast::<Map>();
                 log::trace!("script returned <Map> = {:?}", &v);
-                return json!(null);
+                let res: HashMap<&str, Value> = HashMap::new();
+                return json!(res);
             } else {
                 log::error!("Script returned unexpected value: {:?}", value);
                 std::process::exit(11);

@@ -17,15 +17,16 @@ pub fn store(c: &cmd::Cli, k: &str, v: &Value) {
     log::debug!("State: {} = {:?}", &k, &v);
 }
 
-pub fn values(c: &cmd::Cli) -> HashMap::<&str, &Value> {
-    let res = HashMap::new();
+pub fn values(c: &cmd::Cli) -> HashMap::<String, Value> {
+    let mut res: HashMap<String, Value> = HashMap::new();
     let bucket = open_kv(&c);
     for item in bucket.iter() {
         let i = item.unwrap();
         let key: String = i.key().unwrap();
         let value = i.value::<Raw>();
-        let v = &rjson::to_value(&value.unwrap());
+        let v = rjson::to_value(&value.unwrap());
         log::debug!("state: {}, value: {:?}", &key, &v);
+        res.insert(key, v);
     }
-    res
+    return res;
 }

@@ -1,6 +1,7 @@
 extern crate log;
 use crate::cmd;
 use crate::cmd::nrkv;
+use crate::cmd::eval;
 
 pub fn process_set(c: &cmd::Cli, a: &Vec<String>) {
     log::trace!("NRCLI Set() reached");
@@ -15,7 +16,7 @@ fn set_from_args(c: &cmd::Cli, args: &Vec<String>) {
         }
         let key = pair[0];
         let value = pair[1];
-        let v = cmd::raw_string_to_value(&c, &value);
+        let v = eval::eval_expression(&c, &value);
         nrkv::store(&c, &key, &v);
     }
 }

@@ -279,10 +279,10 @@ pub fn string_to_value(c: &Cli, e: &u8, v: &str) -> Value {
     if *e > 0 {
         return eval::eval_expression(&c, &v);
     }
-    raw_string_to_value(&c, &v)
+    raw_string_to_value(&v)
 }
 
-pub fn raw_string_to_value(c: &Cli, v: &str) -> Value {
+pub fn raw_string_to_value(v: &str) -> Value {
     match v {
         "true" => { return json!(true); }
         "false" => { return json!(false); }
