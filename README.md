@@ -102,12 +102,14 @@ I am not recommending to use command line parameters to pass that critical infor
 
 ### Curb the debug output
 
-By default, nrapm outputs with debuglevel "TRACE" which makes it to be a lot of output. You can set environment variable NRAPM_LOG_LEVEL to set desired lovel of output from nrapm. Available options are:
+By default, nrapm outputs with debuglevel "ERRPR" which makes it to display only error messages. You can set environment variable NRAPM_LOG_LEVEL to set desired level of output from nrapm. Available options are:
 
 - trace - lots of output and that is default.
 - debug - much more compact output
 - warning - very few messages
 - error - report only errors. Set this for production.
+
+If you do not set-up environment variable, you can control output with -d or --debug key of nrapm command, more "d's" you passed, more verbose output it is going to be.
 
 ### Passing positional parameters to nrapm
 
