@@ -3,10 +3,14 @@ use serde_json::{json,to_string, Value};
 use ureq::post;
 use crate::cmd;
 
-pub fn process_metric(c: &cmd::Cli, n: &String, t: &String, v: &String, _instance_id: &String, a: &Vec<String>) {
+pub fn process_metric(c: &cmd::Cli, n: &String, t: &String, v: &String, instance_id: &String, a: &Vec<String>) {
     log::trace!("NRAPM Metric() reached");
-    //a.insert(a, format!("service_instance_id={}", instance_id.to_string()).as_string());
-    let mut j = cmd::parse_args(&c, false, &c.eval, &c.hostname, &c.timestamp, a.to_vec());
+    let mut param: Vec<String> = Vec::new();
+    param.push(format!("service.instance.id={}", instance_id.to_string()));
+    for p in a {
+        param.push(p.to_string());
+    }
+    let mut j = cmd::parse_args(&c, false, &c.eval, &c.hostname, &c.timestamp, param.to_vec());
     j.insert("name".to_string(), Value::from(n.as_str()));
     j.insert("type".to_string(), Value::from(t.as_str()));
     j.insert("value".to_string(), cmd::string_to_value(&c, &c.eval, v.as_str()));
