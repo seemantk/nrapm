@@ -18,6 +18,7 @@ mod nrmetric;
 mod nrtrace;
 mod nreval;
 mod sanity;
+mod setloglevel;
 mod eval;
 mod nrscript;
 mod nrrun;
@@ -32,6 +33,9 @@ mod nrgen;
 #[clap(version = "1.0")]
 #[clap(about = "APM interface to a New Relic", long_about = None)]
 pub struct Cli {
+    #[clap(short, long, action = clap::ArgAction::Count, help="Increase verbosity")]
+    debug: u8,
+
     #[clap(short, action = clap::ArgAction::Count, help="Enable evaluation mode")]
     eval: u8,
 
@@ -243,6 +247,7 @@ struct Generate {
 
 pub fn init() {
     let cli = Cli::parse();
+    setloglevel::setloglevel(cli.clone());
     sanity::check_sanity(cli.clone());
     match &cli.command {
         Commands::Eval(eval) => {
