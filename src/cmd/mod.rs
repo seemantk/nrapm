@@ -23,6 +23,7 @@ mod nrscript;
 mod nrrun;
 pub mod nrkv;
 mod nrset;
+mod nrget;
 mod nrgen;
 
 #[derive(Parser, Clone)]
@@ -78,6 +79,7 @@ enum Commands {
     Trace(Trace),
     Process(Process),
     Set(Set),
+    Get(Get),
     Run(Run),
     Generate(Generate),
 }
@@ -228,6 +230,12 @@ struct Set {
 }
 
 #[derive(Args, Clone, Debug)]
+#[clap(about="Get the list of stateful variables")]
+struct Get {
+
+}
+
+#[derive(Args, Clone, Debug)]
 #[clap(about="Generate 128-bit random ID")]
 struct Generate {
 
@@ -273,6 +281,9 @@ pub fn init() {
         }
         Commands::Set(set) => {
             nrset::process_set(&cli,  &set.args);
+        }
+        Commands::Get(_) => {
+            nrget::process_get(&cli);
         }
         Commands::Generate(_) => {
             nrgen::process_generate(&cli);
