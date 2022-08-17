@@ -23,6 +23,7 @@ mod nrscript;
 mod nrrun;
 pub mod nrkv;
 mod nrset;
+mod nrgen;
 
 #[derive(Parser, Clone)]
 #[clap(name = "nrapm")]
@@ -60,7 +61,7 @@ pub struct Cli {
     #[clap(help="Timestamp", long, default_value_t = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u64)]
     timestamp: u64,
 
-    #[clap(short, long, required=true, help="Name of the key-value database for storing the state")]
+    #[clap(short, long, default_value_t = String::from(env::var("NRAPM_STATE").unwrap_or("".to_string())), help="Name of the key-value database for storing the state")]
     state: String,
 
     #[clap(subcommand)]
@@ -78,6 +79,7 @@ enum Commands {
     Process(Process),
     Set(Set),
     Run(Run),
+    Generate(Generate),
 }
 
 #[derive(Args, Clone, Debug)]
@@ -129,10 +131,10 @@ struct Log {
     #[clap(short, long, default_value_t = String::from("shell"))]
     service: String,
 
-    #[clap(short, long)]
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_ID").unwrap_or("".to_string())), long)]
     id: String,
 
-    #[clap(short, long)]
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_TRACEID").unwrap_or("".to_string())), long)]
     trace_id: String,
 }
 
@@ -164,13 +166,13 @@ struct Trace {
     #[clap(short, long, default_value_t = String::from("shell"))]
     service: String,
 
-    #[clap(short, long, required=true)]
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_TRACEID").unwrap_or("".to_string())), long, required=true)]
     trace_id: String,
 
-    #[clap(short, long, required=true)]
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_ID").unwrap_or("".to_string())), long, required=true)]
     id: String,
 
-    #[clap(short, long, default_value_t = String::from(""))]
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_PARENTID").unwrap_or("".to_string())), long)]
     parent_id: String,
 
     #[clap(short, long, required=true)]
@@ -201,13 +203,13 @@ struct Run {
     #[clap(short, long, default_value_t = String::from("shell"))]
     service: String,
 
-    #[clap(short, long, required=true)]
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_TRACEID").unwrap_or("".to_string())), long, required=true)]
     trace_id: String,
 
-    #[clap(short, long, required=true)]
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_ID").unwrap_or("".to_string())), long, required=true)]
     id: String,
 
-    #[clap(short, long, default_value_t = String::from("nrapm"))]
+    #[clap(short, long, default_value_t = String::from(env::var("NRAPM_PARENTID").unwrap_or("".to_string())))]
     parent_id: String,
 }
 
@@ -216,6 +218,12 @@ struct Run {
 struct Set {
     #[clap(last = true)]
     args: Vec<String>,
+
+}
+
+#[derive(Args, Clone, Debug)]
+#[clap(about="Generate 128-bit random ID")]
+struct Generate {
 
 }
 
@@ -259,6 +267,9 @@ pub fn init() {
         }
         Commands::Set(set) => {
             nrset::process_set(&cli,  &set.args);
+        }
+        Commands::Generate(_) => {
+            nrgen::process_generate(&cli);
         }
     }
 }

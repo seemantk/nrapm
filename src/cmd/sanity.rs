@@ -19,6 +19,10 @@ pub fn check_sanity(c: cmd::Cli) {
         log::error!("You did not specified New Relic INSERT key");
         std::process::exit(10)
     }
+    if c.state.is_empty() {
+        log::error!("You did not specified NRAPM state storage");
+        std::process::exit(10)
+    }
     log::debug!("NR INSERT key is {}", c.nr_insert);
     nrkv::open_kv(&c);
     log::trace!("NRAPM Sanity check is OK")
