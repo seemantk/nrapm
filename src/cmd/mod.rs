@@ -128,6 +128,12 @@ struct Log {
 
     #[clap(short, long, default_value_t = String::from("shell"))]
     service: String,
+
+    #[clap(short, long)]
+    id: String,
+
+    #[clap(short, long)]
+    trace_id: String,
 }
 
 #[derive(Args, Clone, Debug)]
@@ -228,7 +234,7 @@ pub fn init() {
             nrevt::process_event(&cli, &event.evt_type, &event.args);
         }
         Commands::Log(nrlog) => {
-            nrlog::process_log(&cli, &nrlog.log_type, &nrlog.service, &nrlog.args);
+            nrlog::process_log(&cli, &nrlog.log_type, &nrlog.service, &nrlog.trace_id, &nrlog.id, &nrlog.args);
         }
         Commands::Metric(met) => {
             nrmetric::process_metric(&cli, &met.name, &met.metric_type, &met.value, &met.args);
