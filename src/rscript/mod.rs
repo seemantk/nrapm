@@ -9,7 +9,7 @@ pub mod rjson;
 mod rstate;
 
 pub fn run_script(c: &cmd::Cli, s: &String) -> Value {
-    let mut engine = Engine::new();
+    let engine = Engine::new();
     let mut scope = Scope::new();
     rstate::load_state(&c, &mut scope);
     let res: Result<Dynamic, Box<EvalAltResult>> = engine.eval_with_scope(&mut scope, s);

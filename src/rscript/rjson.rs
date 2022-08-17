@@ -18,6 +18,8 @@ pub fn dynamic_from_value(v: &Value) -> Dynamic {
         Dynamic::from_str(v.as_str().unwrap()).unwrap()
     } else if v.is_i64() {
         Dynamic::from_int(v.as_i64().unwrap())
+    } else if v.is_f64() {
+        Dynamic::from_float(v.as_f64().unwrap())
     } else if v.is_boolean() {
         Dynamic::from_bool(v.as_bool().unwrap())
     } else {
@@ -30,6 +32,8 @@ pub fn dynamic_to_value(k: &String, s: &mut Scope, v: &Value) -> Value {
         Value::from(s.get_value::<String>(k).unwrap())
     } else if v.is_i64() {
         Value::from(s.get_value::<i64>(k).unwrap())
+    } else if v.is_f64() {
+        Value::from(s.get_value::<f64>(k).unwrap())
     } else if v.is_boolean() {
         Value::from(s.get_value::<bool>(k).unwrap())
     } else {
