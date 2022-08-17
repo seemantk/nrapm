@@ -36,7 +36,11 @@ pub fn process_run(c: &cmd::Cli, s: &String, t: &String,  e: &String, i: &String
                         sys.refresh_all();
                         let processes = &sys.processes();
                         if processes.contains_key(&Pid::from(*pid)) {
-                            nrevt::process_process_event(&c, &e, &pid, &Vec::new());
+                            let mut a: Vec<String> = Vec::new();
+                            a.push(format!("id={}", &i));
+                            a.push(format!("trace.id={}", &t));
+                            a.push(format!("parent.id={}", &p));
+                            nrevt::process_process_event(&c, &e, &pid, &a);
                             thread::sleep(sec);
                             log::debug!("Process statistics sent");
                             continue;
