@@ -1,7 +1,7 @@
 extern crate log;
 use std;
 use std::collections::HashMap;
-use rhai::{Engine, Dynamic, EvalAltResult, Array, Map, Shared};
+use rhai::{Engine, Dynamic, EvalAltResult, Array, Map, Scope};
 use serde_json::{json, Value};
 use crate::cmd;
 
@@ -10,11 +10,10 @@ mod rstate;
 
 pub fn run_script(c: &cmd::Cli, s: &String) -> Value {
     let mut engine = Engine::new();
-    let sm = rstate::load_state_to_module(&c);
-    let state_mod = Shared::as_ptr(&sm);
-    engine.register_global_module(sm);
-    rstate::save_state(&c, state_mod);
-    let res: Result<Dynamic, Box<EvalAltResult>> = engine.eval(s);
+    let mut scope = Scope::new();
+    rstate::load_state(&c, &mut scope);
+    let res: Result<Dynamic, Box<EvalAltResult>> = engine.eval_with_scope(&mut scope, s);
+    rstate::save_state(&c, &mut scope);
     match res {
         Ok(_) => {
             let value = res.unwrap();
