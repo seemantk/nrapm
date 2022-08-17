@@ -21,5 +21,5 @@ pub fn check_sanity(c: cmd::Cli) {
     }
     log::debug!("NR INSERT key is {}", c.nr_insert);
     nrkv::open_kv(&c);
-    log::trace!("NRCLI Sanity check is OK")
+    log::trace!("NRAPM Sanity check is OK")
 }

@@ -23,6 +23,7 @@ pub fn process_run(c: &cmd::Cli, s: &String, t: &String,  e: &String, i: &String
         .args(cmdargs)
         .spawn()
         .expect("failed to execute application that to be measured");
+    let mut err_msg: String = "".to_string();
     match cmd.try_wait() {
         Ok(None) => {
             let mut sys = System::new();
@@ -37,22 +38,28 @@ pub fn process_run(c: &cmd::Cli, s: &String, t: &String,  e: &String, i: &String
                         if processes.contains_key(&Pid::from(*pid)) {
                             nrevt::process_process_event(&c, &e, &pid, &Vec::new());
                             thread::sleep(sec);
+                            log::debug!("Process statistics sent");
+                            continue;
                         } else {
                             log::debug!("Spawned command PID is: {} no more", &pid);
                             break;
                         }
                     }
-                    Ok(Some(_)) => {
+                    Ok(Some(status)) => {
+                        log::debug!("Application {} exit with {}", cmdname, status);
+                        if ! status.success() {
+                            err_msg = format!("Process exit {}", status);
+                        }
                         break
                     }
                     Err(err) => {
-                        log::error!("Error happens while trying tu measure process: {err}");
+                        log::error!("Error happens while trying to measure process: {err}");
                         std::process::exit(14);
                     }
                 }
             }
             let stop = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u64;
-            nrtrace::process_trace_with_timestamp(&c, &ts, &s, &t, &i, &p, cmdname, &(stop-start), &Vec::new());
+            nrtrace::process_trace_with_timestamp(&c, &err_msg, &ts, &s, &t, &i, &p, cmdname, &(stop-start), &Vec::new());
         }
         Ok(Some(_)) => {
             log::error!("Child process return OK, but we do not know what to do");

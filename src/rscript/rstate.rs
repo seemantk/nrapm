@@ -15,13 +15,7 @@ pub fn load_state_to_module(c: &cmd::Cli) -> Shared<Module> {
     Shared::new(res)
 }
 
-pub fn save_state(c: &cmd::Cli, m: *const Module) {
+pub fn save_state(_c: &cmd::Cli, _m: *const Module) {
     log::debug!("Saving state from scripting engine");
-    let vars = nrkv::values(&c);
-    for (key, value) in vars {
-        unsafe {
-            let res = <* const Module>::as_ref(m).unwrap().get_var(key.as_str());
-            log::debug!("save state: {} {:?}", key, res);
-        }
-    }
+
 }

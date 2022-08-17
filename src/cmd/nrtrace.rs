@@ -3,13 +3,12 @@ use serde_json::{json, to_string, Map, Value};
 use ureq::post;
 use crate::cmd;
 
-pub fn process_trace(c: &cmd::Cli, s: &String, t: &String, i: &String, p: &String, n: &String, d: &u64, a: &Vec<String>) {
+pub fn process_trace(c: &cmd::Cli, e: &String, s: &String, t: &String, i: &String, p: &String, n: &String, d: &u64, a: &Vec<String>) {
     log::trace!("NRAPM Trace() reached");
     let mut res = Map::new();
     let mut attr = Map::new();
     attr.insert("host".to_string(), Value::from(c.hostname.as_str()));
     res.insert("timestamp".to_string(), json!(c.timestamp));
-    res.insert("service".to_string(), Value::from(s.as_str()));
     res.insert("trace.id".to_string(), Value::from(t.as_str()));
     res.insert("id".to_string(), Value::from(i.as_str()));
     if ! p.is_empty() {
@@ -17,6 +16,10 @@ pub fn process_trace(c: &cmd::Cli, s: &String, t: &String, i: &String, p: &Strin
     }
     attr.insert("name".to_string(), Value::from(n.as_str()));
     attr.insert("duration.ms".to_string(), json!(d));
+    attr.insert("service.name".to_string(), Value::from(s.as_str()));
+    if ! e.is_empty() {
+        attr.insert("error.message".to_string(), Value::from(e.as_str()));
+    }
     for l in a {
         let pair: Vec<_> = l.splitn(2, "=").collect();
         if pair.len() != 2 {
@@ -37,12 +40,12 @@ pub fn process_trace(c: &cmd::Cli, s: &String, t: &String, i: &String, p: &Strin
     send_trace(c, &payload);
 }
 
-pub fn process_trace_with_timestamp(c: &cmd::Cli, ts: &u64,  s: &String, t: &String, i: &String, p: &String, n: &String, d: &u64, a: &Vec<String>) {
+pub fn process_trace_with_timestamp(c: &cmd::Cli, err: &String, ts: &u64,  s: &String, t: &String, i: &String, p: &String, n: &String, d: &u64, a: &Vec<String>) {
+    log::trace!("NRAPM Trace() with timestamp {} reached", ts);
     let mut res = Map::new();
     let mut attr = Map::new();
     attr.insert("host".to_string(), Value::from(c.hostname.as_str()));
     res.insert("timestamp".to_string(), json!(ts));
-    res.insert("service".to_string(), Value::from(s.as_str()));
     res.insert("trace.id".to_string(), Value::from(t.as_str()));
     res.insert("id".to_string(), Value::from(i.as_str()));
     if ! p.is_empty() {
@@ -50,6 +53,10 @@ pub fn process_trace_with_timestamp(c: &cmd::Cli, ts: &u64,  s: &String, t: &Str
     }
     attr.insert("name".to_string(), Value::from(n.as_str()));
     attr.insert("duration.ms".to_string(), json!(d));
+    attr.insert("service.name".to_string(), Value::from(s.as_str()));
+    if ! err.is_empty() {
+        attr.insert("error.message".to_string(), Value::from(err.as_str()));
+    }
     for l in a {
         let pair: Vec<_> = l.splitn(2, "=").collect();
         if pair.len() != 2 {

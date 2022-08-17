@@ -57,7 +57,7 @@ pub struct Cli {
     #[clap(help="Hostname for the script APM", long, default_value_t = String::from(hostname::get().unwrap().into_string().unwrap()))]
     hostname: String,
 
-    #[clap(help="Timestamp", long, default_value_t = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs())]
+    #[clap(help="Timestamp", long, default_value_t = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis() as u64)]
     timestamp: u64,
 
     #[clap(short, long, required=true, help="Name of the key-value database for storing the state")]
@@ -152,6 +152,9 @@ struct Trace {
     #[clap(last = true)]
     args: Vec<String>,
 
+    #[clap(short, long, default_value_t = String::from(""))]
+    error: String,
+
     #[clap(short, long, default_value_t = String::from("shell"))]
     service: String,
 
@@ -231,7 +234,7 @@ pub fn init() {
             nrmetric::process_metric(&cli, &met.name, &met.metric_type, &met.value, &met.args);
         }
         Commands::Trace(trace) => {
-            nrtrace::process_trace(&cli, &trace.service, &trace.trace_id, &trace.id, &trace.parent_id, &trace.name, &trace.duration, &trace.args);
+            nrtrace::process_trace(&cli, &trace.error, &trace.service, &trace.trace_id, &trace.id, &trace.parent_id, &trace.name, &trace.duration, &trace.args);
         }
         Commands::Process(proc) => {
             nrevt::process_process_event(&cli, &proc.evt_type, &proc.pid, &proc.args);
