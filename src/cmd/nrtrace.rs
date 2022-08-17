@@ -3,7 +3,7 @@ use serde_json::{json, to_string, Map, Value};
 use ureq::post;
 use crate::cmd;
 
-pub fn process_trace(c: &cmd::Cli, e: &String, s: &String, t: &String, i: &String, p: &String, n: &String, d: &u64, a: &Vec<String>) {
+pub fn process_trace(c: &cmd::Cli, e: &String, s: &String, t: &String, i: &String, p: &String, n: &String, d: &u64, sampled: &bool, trace_type: &String, trace_category: &String, a: &Vec<String>) {
     log::trace!("NRAPM Trace() reached");
     let mut res = Map::new();
     let mut attr = Map::new();
@@ -16,7 +16,11 @@ pub fn process_trace(c: &cmd::Cli, e: &String, s: &String, t: &String, i: &Strin
     }
     attr.insert("name".to_string(), Value::from(n.as_str()));
     attr.insert("duration.ms".to_string(), json!(d));
+    attr.insert("primary_application_id".to_string(), Value::from(format!("{}-{}", n, i)));
     attr.insert("service.name".to_string(), Value::from(s.as_str()));
+    attr.insert("sampled".to_string(), json!(sampled));
+    attr.insert("type".to_string(), Value::from(trace_type.as_str()));
+    attr.insert("category".to_string(), Value::from(trace_category.as_str()));
     if ! e.is_empty() {
         attr.insert("error.message".to_string(), Value::from(e.as_str()));
     }

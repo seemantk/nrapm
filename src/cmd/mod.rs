@@ -178,6 +178,15 @@ struct Trace {
 
     #[clap(short, long, required=true)]
     duration: u64,
+
+    #[clap(long, default_value_t = true)]
+    sampled: bool,
+
+    #[clap(long, default_value_t = String::from("App"))]
+    trace_type: String,
+
+    #[clap(long, default_value_t = String::from("generic"))]
+    trace_category: String,
 }
 
 #[derive(Args, Clone, Debug)]
@@ -240,7 +249,7 @@ pub fn init() {
             nrmetric::process_metric(&cli, &met.name, &met.metric_type, &met.value, &met.args);
         }
         Commands::Trace(trace) => {
-            nrtrace::process_trace(&cli, &trace.error, &trace.service, &trace.trace_id, &trace.id, &trace.parent_id, &trace.name, &trace.duration, &trace.args);
+            nrtrace::process_trace(&cli, &trace.error, &trace.service, &trace.trace_id, &trace.id, &trace.parent_id, &trace.name, &trace.duration, &trace.sampled, &trace.trace_type, &trace.trace_category, &trace.args);
         }
         Commands::Process(proc) => {
             nrevt::process_process_event(&cli, &proc.evt_type, &proc.pid, &proc.args);
