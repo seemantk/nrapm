@@ -3,7 +3,7 @@ use serde_json::{json, to_string, Map, Value};
 use ureq::post;
 use crate::cmd;
 
-pub fn process_trace(c: &cmd::Cli, e: &String, s: &String, t: &String, i: &String, p: &String, n: &String, d: &u64, sampled: &bool, trace_type: &String, trace_category: &String, a: &Vec<String>) {
+pub fn process_trace(c: &cmd::Cli, e: &String, s: &String, t: &String, i: &String, p: &String, n: &String, d: &u64, sampled: &bool, trace_type: &String, trace_category: &String, instance_id: &String, a: &Vec<String>) {
     log::trace!("NRAPM Trace() reached");
     let mut res = Map::new();
     let mut attr = Map::new();
@@ -23,6 +23,9 @@ pub fn process_trace(c: &cmd::Cli, e: &String, s: &String, t: &String, i: &Strin
     attr.insert("category".to_string(), Value::from(trace_category.as_str()));
     if ! e.is_empty() {
         attr.insert("error.message".to_string(), Value::from(e.as_str()));
+    }
+    if ! instance_id.is_empty() {
+        attr.insert("service.instance.id".to_string(), Value::from(instance_id.as_str()));
     }
     for l in a {
         let pair: Vec<_> = l.splitn(2, "=").collect();

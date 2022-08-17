@@ -166,10 +166,10 @@ struct Trace {
     #[clap(short, long, default_value_t = String::from("shell"))]
     service: String,
 
-    #[clap(short, default_value_t = String::from(env::var("NRAPM_TRACEID").unwrap_or("".to_string())), long, required=true)]
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_TRACEID").unwrap_or("".to_string())), long)]
     trace_id: String,
 
-    #[clap(short, default_value_t = String::from(env::var("NRAPM_ID").unwrap_or("".to_string())), long, required=true)]
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_ID").unwrap_or("".to_string())), long)]
     id: String,
 
     #[clap(short, default_value_t = String::from(env::var("NRAPM_PARENTID").unwrap_or("".to_string())), long)]
@@ -189,6 +189,9 @@ struct Trace {
 
     #[clap(long, default_value_t = String::from("generic"))]
     trace_category: String,
+
+    #[clap(long, default_value_t = String::from("shell"))]
+    instance_id: String,
 }
 
 #[derive(Args, Clone, Debug)]
@@ -203,10 +206,10 @@ struct Run {
     #[clap(short, long, default_value_t = String::from("shell"))]
     service: String,
 
-    #[clap(short, default_value_t = String::from(env::var("NRAPM_TRACEID").unwrap_or("".to_string())), long, required=true)]
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_TRACEID").unwrap_or("".to_string())), long)]
     trace_id: String,
 
-    #[clap(short, default_value_t = String::from(env::var("NRAPM_ID").unwrap_or("".to_string())), long, required=true)]
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_ID").unwrap_or("".to_string())), long)]
     id: String,
 
     #[clap(short, long, default_value_t = String::from(env::var("NRAPM_PARENTID").unwrap_or("".to_string())))]
@@ -257,7 +260,7 @@ pub fn init() {
             nrmetric::process_metric(&cli, &met.name, &met.metric_type, &met.value, &met.args);
         }
         Commands::Trace(trace) => {
-            nrtrace::process_trace(&cli, &trace.error, &trace.service, &trace.trace_id, &trace.id, &trace.parent_id, &trace.name, &trace.duration, &trace.sampled, &trace.trace_type, &trace.trace_category, &trace.args);
+            nrtrace::process_trace(&cli, &trace.error, &trace.service, &trace.trace_id, &trace.id, &trace.parent_id, &trace.name, &trace.duration, &trace.sampled, &trace.trace_type, &trace.trace_category, &trace.instance_id, &trace.args);
         }
         Commands::Process(proc) => {
             nrevt::process_process_event(&cli, &proc.evt_type, &proc.pid, &proc.args);
