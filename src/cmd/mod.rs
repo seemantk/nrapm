@@ -25,6 +25,7 @@ mod nrrun;
 pub mod nrkv;
 mod nrset;
 mod nrget;
+mod nrremove;
 mod nrgen;
 
 #[derive(Parser, Clone)]
@@ -83,6 +84,7 @@ enum Commands {
     Trace(Trace),
     Process(Process),
     Set(Set),
+    Remove(Remove),
     Get(Get),
     Run(Run),
     Generate(Generate),
@@ -234,6 +236,14 @@ struct Set {
 }
 
 #[derive(Args, Clone, Debug)]
+#[clap(about="Remove variable from a permanent state")]
+struct Remove {
+    #[clap(last = true)]
+    args: Vec<String>,
+
+}
+
+#[derive(Args, Clone, Debug)]
 #[clap(about="Get the list of stateful variables")]
 struct Get {
 
@@ -286,6 +296,9 @@ pub fn init() {
         }
         Commands::Set(set) => {
             nrset::process_set(&cli,  &set.args);
+        }
+        Commands::Remove(rem) => {
+            nrremove::process_remove(&cli,  &rem.args);
         }
         Commands::Get(_) => {
             nrget::process_get(&cli);
