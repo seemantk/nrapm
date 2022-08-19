@@ -27,6 +27,7 @@ mod nrset;
 mod nrget;
 mod nrremove;
 mod nrgen;
+mod nrtransaction;
 
 #[derive(Parser, Clone)]
 #[clap(name = "nrapm")]
@@ -88,6 +89,8 @@ enum Commands {
     Get(Get),
     Run(Run),
     Generate(Generate),
+    Begin(Begin),
+    End(End),
 }
 
 #[derive(Args, Clone, Debug)]
@@ -206,6 +209,65 @@ struct Trace {
 }
 
 #[derive(Args, Clone, Debug)]
+#[clap(about="Begin transaction")]
+struct Begin {
+    #[clap(short, long, default_value_t = String::from("shell"))]
+    service: String,
+
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_TRACEID").unwrap_or("".to_string())), long)]
+    trace_id: String,
+
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_ID").unwrap_or("".to_string())), long)]
+    id: String,
+
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_PARENTID").unwrap_or("".to_string())), long)]
+    parent_id: String,
+
+    #[clap(short, long, required=true)]
+    name: String,
+
+    #[clap(long, default_value_t = String::from("shell"))]
+    instance_id: String,
+}
+
+#[derive(Args, Clone, Debug)]
+#[clap(about="Commit transaction with a Trace")]
+struct End {
+    #[clap(last = true)]
+    args: Vec<String>,
+
+    #[clap(short, long, default_value_t = String::from(""))]
+    error: String,
+
+    #[clap(short, long, default_value_t = String::from("shell"))]
+    service: String,
+
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_TRACEID").unwrap_or("".to_string())), long)]
+    trace_id: String,
+
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_ID").unwrap_or("".to_string())), long)]
+    id: String,
+
+    #[clap(short, default_value_t = String::from(env::var("NRAPM_PARENTID").unwrap_or("".to_string())), long)]
+    parent_id: String,
+
+    #[clap(short, long, required=true)]
+    name: String,
+
+    #[clap(long, default_value_t = true)]
+    sampled: bool,
+
+    #[clap(long, default_value_t = String::from("App"))]
+    trace_type: String,
+
+    #[clap(long, default_value_t = String::from("generic"))]
+    trace_category: String,
+
+    #[clap(long, default_value_t = String::from("shell"))]
+    instance_id: String,
+}
+
+#[derive(Args, Clone, Debug)]
 #[clap(about="Run a command and measure it's performance")]
 struct Run {
     #[clap(last = true)]
@@ -305,6 +367,12 @@ pub fn init() {
         }
         Commands::Generate(_) => {
             nrgen::process_generate(&cli);
+        }
+        Commands::Begin(begin) => {
+            nrtransaction::process_begin(&cli, &begin.service, &begin.trace_id, &begin.id, &begin.parent_id, &begin.name, &begin.instance_id);
+        }
+        Commands::End(end) => {
+            nrtransaction::process_end(&cli, &end.error, &end.service, &end.trace_id, &end.id, &end.parent_id, &end.name, &end.sampled, &end.trace_type, &end.trace_category, &end.instance_id, &end.args);
         }
     }
 }

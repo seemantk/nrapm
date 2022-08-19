@@ -17,6 +17,11 @@ pub fn store(c: &cmd::Cli, k: &str, v: &Value) {
     log::debug!("State: {} = {:?}", &k, &v);
 }
 
+pub fn have(c: &cmd::Cli, k: &str) -> bool {
+    let bucket = open_kv(&c);
+    bucket.contains(&k).unwrap()
+}
+
 pub fn delete(c: &cmd::Cli, k: &str) {
     let bucket = open_kv(&c);
     let _ = bucket.remove(&k);
